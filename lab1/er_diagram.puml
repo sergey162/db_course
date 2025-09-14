@@ -1,0 +1,53 @@
+@startuml
+!theme plain
+
+entity employees {
+  * id : integer
+  * first_name : varchar
+  * last_name : varchar
+  * birth_date : date
+  * email : varchar
+  * phone : varchar
+  * hire_date : date
+}
+
+entity positions {
+  * id : integer
+  * title : varchar
+  * description : text
+  * grade_level : varchar
+}
+
+entity departments {
+  * id : integer
+  * name : varchar
+  * description : text
+}
+
+entity vacations {
+  * id : integer
+  * type : varchar
+  * start_date : date
+  * end_date : date
+  * status : varchar
+}
+
+entity work_hours {
+  * id : integer
+  * date : date
+  * hours : decimal
+}
+
+entity assignments {
+  * id : integer
+  * start_date : date
+  * end_date : date
+}
+
+employees ||--o{ assignments : has
+departments ||--o{ assignments : includes
+positions ||--o{ assignments : defines
+employees ||--o{ vacations : requests
+employees ||--o{ work_hours : tracks
+
+@enduml
