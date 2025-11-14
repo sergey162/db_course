@@ -236,3 +236,53 @@ CREATE TRIGGER tr_validate_work_hours
     FOR EACH ROW
     EXECUTE FUNCTION validate_work_hours();
 
+-- Примеры использования
+-- Добавление отделов и должностей
+INSERT INTO departments (name, description) VALUES 
+('IT', 'Отдел информационных технологий'),
+('HR', 'Отдел кадров');
+
+INSERT INTO positions (title, description, grade_level) VALUES 
+('Software Developer', 'Разработчик программного обеспечения', 'Middle'),
+('HR Manager', 'Менеджер по персоналу', 'Junior');
+
+-- Добавление сотрудника через процедуру
+CALL add_employee_with_assignment(
+    'Иван', 'Петров', '1990-05-15', 
+    'ivan.petrov@company.com', '+79161234567', 1, 1
+);
+
+-- Попытка добавления сотрудника с существующим email (вызовет ошибку)
+CALL add_employee_with_assignment(
+    'Петр', 'Иванов', '1985-03-20', 
+    'ivan.petrov@company.com', '+79167654321', 1, 1
+);
+-- Проверка возможности взять отпуск
+SELECT check_vacation_availability(1, '2024-07-01', '2024-07-14');
+
+-- Создание отпуска (будет проверено триггером)
+INSERT INTO vacations (employee_id, type, start_date, end_date) 
+VALUES (1, 'ежегодный', '2024-07-01', '2024-07-14');
+
+-- Попытка создать некорректный отпуск (вызовет ошибку)
+INSERT INTO vacations (employee_id, type, start_date, end_date) 
+VALUES (1, 'ежегодный', '2024-07-01', '2024-08-01'); -- более 30 дней
+
+-- Добавление рабочих часов
+INSERT INTO work_hours (employee_id, date, hours) VALUES
+(1, '2024-06-01', 8),
+(1, '2024-06-02', 7.5),
+(1, '2024-06-03', 8);
+
+-- Расчет зарплаты за месяц
+SELECT calculate_salary(1, 6, 2024) as salary;
+
+-- Попытка добавить рабочие часы на будущую дату (вызовет ошибку)
+INSERT INTO work_hours (employee_id, date, hours) 
+VALUES (1, '2025-01-01', 8);
+
+-- Обновление данных сотрудника
+UPDATE employees SET phone = '+79169998877' WHERE id = 1;
+
+-- Просмотр аудита
+SELECT * FROM employee_audit;
