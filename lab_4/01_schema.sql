@@ -1,3 +1,12 @@
+-- Лабораторная работа №4 - Создание структуры БД
+
+DROP TABLE IF EXISTS work_hours CASCADE;
+DROP TABLE IF EXISTS vacations CASCADE;
+DROP TABLE IF EXISTS assignments CASCADE;
+DROP TABLE IF EXISTS employees CASCADE;
+DROP TABLE IF EXISTS departments CASCADE;
+DROP TABLE IF EXISTS positions CASCADE;
+
 CREATE TABLE departments (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -48,3 +57,11 @@ CREATE TABLE work_hours (
     hours DECIMAL(5,2) NOT NULL CHECK (hours >= 0 AND hours <= 24),
     UNIQUE(employee_id, date)
 );
+
+-- Комментарии к таблицам
+COMMENT ON TABLE departments IS 'Таблица отделов компании';
+COMMENT ON TABLE positions IS 'Таблица должностей';
+COMMENT ON TABLE employees IS 'Таблица сотрудников';
+COMMENT ON TABLE assignments IS 'Таблица назначений сотрудников по отделам и должностям';
+COMMENT ON TABLE vacations IS 'Таблица отпусков сотрудников';
+COMMENT ON TABLE work_hours IS 'Таблица отработанных часов';
