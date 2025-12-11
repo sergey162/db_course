@@ -1,11 +1,9 @@
--- Лабораторная работа №4 - Создание структуры БД
-
 DROP TABLE IF EXISTS work_hours CASCADE;
 DROP TABLE IF EXISTS vacations CASCADE;
 DROP TABLE IF EXISTS assignments CASCADE;
 DROP TABLE IF EXISTS employees CASCADE;
-DROP TABLE IF EXISTS departments CASCADE;
 DROP TABLE IF EXISTS positions CASCADE;
+DROP TABLE IF EXISTS departments CASCADE;
 
 CREATE TABLE departments (
     id SERIAL PRIMARY KEY,
@@ -40,28 +38,44 @@ CREATE TABLE assignments (
     CONSTRAINT valid_dates CHECK (start_date <= end_date OR end_date IS NULL)
 );
 
-CREATE TABLE vacations (
-    id SERIAL PRIMARY KEY,
-    employee_id INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
-    type VARCHAR(50) NOT NULL,
-    start_date DATE NOT NULL,
-    end_date DATE NOT NULL,
-    status VARCHAR(20) DEFAULT 'pending',
-    CONSTRAINT valid_vacation_dates CHECK (start_date <= end_date)
-);
-
 CREATE TABLE work_hours (
     id SERIAL PRIMARY KEY,
     employee_id INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
     date DATE NOT NULL,
-    hours DECIMAL(5,2) NOT NULL CHECK (hours >= 0 AND hours <= 24),
-    UNIQUE(employee_id, date)
+    hours DECIMAL(5,2) NOT NULL CHECK (hours >= 0 AND hours <= 24)
 );
 
--- Комментарии к таблицам
-COMMENT ON TABLE departments IS 'Таблица отделов компании';
-COMMENT ON TABLE positions IS 'Таблица должностей';
-COMMENT ON TABLE employees IS 'Таблица сотрудников';
-COMMENT ON TABLE assignments IS 'Таблица назначений сотрудников по отделам и должностям';
-COMMENT ON TABLE vacations IS 'Таблица отпусков сотрудников';
-COMMENT ON TABLE work_hours IS 'Таблица отработанных часов';
+BEGIN;
+
+INSERT INTO departments (name, description)
+SELECT 'Department ' || i, 'Desc ' || i FROM generate_series(1, 50) i;
+
+INSERT INTO positions (title, description, grade_level)
+SELECT 'Pos ' || i, 'Desc ' || i, 'G' || (i % 5 + 1) FROM generate_series(1, 100) i;
+
+-- 300,000 сотрудников
+INSERT INTO employees (first_name, last_name, birth_date, email, phone, hire_date)
+SELECT 
+    'First' || i, 'Last' || i, 
+    '1985-01-01'::date + (i % 10000), 
+    'user' || i || '@example.com', 
+    '+7900' || (1000000 + i),
+    '2015-01-01'::date + (i % 2000)
+FROM generate_series(1, 300000) i;
+
+INSERT INTO assignments (employee_id, department_id, position_id, start_date)
+SELECT id, (random()*49 + 1)::int, (random()*99 + 1)::int, hire_date
+FROM employees;
+
+-- 1.5 миллиона записей в work_hours
+INSERT INTO work_hours (employee_id, date, hours)
+SELECT 
+    e.id, 
+    '2023-01-01'::date + g.d, 
+    (random() * 12)::numeric(5,2)
+FROM employees e
+CROSS JOIN generate_series(0, 5) as g(d)
+WHERE e.id <= 250000;
+
+COMMIT;
+ANALYZE;
